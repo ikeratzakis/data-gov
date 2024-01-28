@@ -38,3 +38,16 @@ After all containers are up and running, Metabase can be accessed at `http://loc
 2. Most datasets are small in size and there are no performance issues with a simple setup
 3. Many dataset endpoints return a "window exceeded" response - this can vary over time. This is related to the first issue
 # Extracting insights
+![metabase dashboard](https://github.com/ikeratzakis/data-gov/blob/main/metabase_dashboard.png)
+
+## Example SQL Queries
+```
+SELECT subquery.date, SUM(subquery.max_totaldistinctpersons) as total_max_totaldistinctpersons
+FROM (
+    SELECT DATE(referencedate) as date, area, MAX(totaldistinctpersons) as max_totaldistinctpersons
+    FROM data_gov.CovidVaccinationData
+    GROUP BY date, area
+) as subquery
+GROUP BY subquery.date;
+```
+
