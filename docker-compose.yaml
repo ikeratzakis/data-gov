@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  app:
+    image: data-gov-python:latest
+    build: .
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    environment:
+    - PYTHONPATH=/app
+    - TOKEN=${TOKEN}
+    - DATASET=${DATASET}
+    - TABLE_NAME=${TABLE_NAME}
+    - TABLE_KEY_COLUMN=${TABLE_KEY_COLUMN}
+    - MYSQL_HOST=${MYSQL_HOST}
+    - MYSQL_USER=${MYSQL_USER}
+    - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    - MYSQL_DATABASE=${MYSQL_DATABASE}
+    - CRAWL_MODE=${CRAWL_MODE}
+
+  metabase:
+    image: metabase/metabase:latest
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+
+volumes:
+  db_data:
