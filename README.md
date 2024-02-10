@@ -1,6 +1,9 @@
 # data-gov-project
 This is a Python application that fetches data from the [data.gov.gr repository](https://data.gov.gr/search/) using its API and inserts them to a **MySQL** database for further analysis. A working end-to-end example with the [COVID-19 Vaccination data](https://data.gov.gr/datasets/mdg_emvolio/) is provided.
 # How to use
+
+## Command line
+`python3.12 data_gov.py --token YOUR_TOKEN --dataset mdg_emvolio --table-name CovidVaccinationData --mysql-host HOST_NAME --mysql-user MYSQL_USER --mysql-password MYSQL_PASSWORD --mysql-database MYSQL_DATABASE --date-from YYYY-MM-DD --date-to YYYY-MM-DD --sleep-seconds SLEEP_SECONDS --interval-days INTERVAL_DAYS --max-requests MAX_REQUESTS`
 ## Token
 Register here for a token: [data.gov.gr page](https://www.data.gov.gr/token/)
 ## Docker 
@@ -20,6 +23,11 @@ TABLE_KEY_COLUMN=unique_id
 MYSQL_HOST=db
 MYSQL_USER=data_gov
 MYSQL_PASSWORD=datagovsqlpassword
+DATE_FROM=YYYY-DD-MM
+DATE_TO=YYYY-DD-MM
+MAX_REQUESTS = 2
+INTERVAL_DAYS = 7
+SLEEP_SECONDS = 5
 ```
 Build the Python dockerfile: `docker build -t data-gov-python -f dockerfile.python`. Modify the `docker-compose.yaml` and the `init.sql` files according to your needs, then run `docker-compose up --env-file .env`.
 ## Configurations
@@ -29,14 +37,12 @@ This is the environment file that controls the variables that will be used for t
 This is the script that will be run on startup from the MySQL Docker container. It can be used to preconfigure the users, passwords, tables etc. 
 ### entrypoint.sh
 This shell script is executed from the Python Docker container. It runs the Python script with the command line arguments provided.
-### Python script
-Adding `--crawl-mode` (or CRAWL_MODE to the .env file) launches the Python script in crawl mode, where once a day data is fetched from the data.gov API for the chosen endpoint. 
 ### Metabase
 After all containers are up and running, Metabase can be accessed at `http://localhost:3000`. It requires an initial setup. For connecting to the MySQL database, this should be added to the connection string: `allowPublicKeyRetrieval=true`
 # Remarks
-1. Unfortunately, the API has practically zero documentation. The only provided endpoint from each dataset allows only batch querying of data (for all dates), thus inside the code a key is constructed from the records to have a way to compare with the inserted ones
-2. Most datasets are small in size and there are no performance issues with a simple setup
-3. Many dataset endpoints return a "window exceeded" response - this can vary over time. This is related to the first issue
+1. Backend can struggle to serve multiple requests, thus a conservative approach is used (2 async tasks, 10 seconds sleep interval).
+2. Most datasets are small in size and there are no performance issues with this simple setup. However datasets like `oasa_ridership` are huge, and performance/RAM requirements start to suffer. An architecture/application rewrite is planned to ensure scalability across all datasets.
+
 # Extracting insights
 ![metabase dashboard](https://github.com/ikeratzakis/data-gov/blob/main/metabase_dashboard.png)
 
