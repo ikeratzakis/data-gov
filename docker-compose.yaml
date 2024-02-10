@@ -19,16 +19,19 @@ services:
     depends_on:
       - db
     environment:
-    - PYTHONPATH=/app
-    - TOKEN=${TOKEN}
-    - DATASET=${DATASET}
-    - TABLE_NAME=${TABLE_NAME}
-    - TABLE_KEY_COLUMN=${TABLE_KEY_COLUMN}
-    - MYSQL_HOST=${MYSQL_HOST}
-    - MYSQL_USER=${MYSQL_USER}
-    - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-    - MYSQL_DATABASE=${MYSQL_DATABASE}
-    - CRAWL_MODE=${CRAWL_MODE}
+      - PYTHONPATH=/app
+      - TOKEN=${TOKEN}
+      - DATASET=${DATASET}
+      - TABLE_NAME=${TABLE_NAME}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - DATE_FROM=${DATE_FROM}
+      - DATE_TO=${DATE_TO}
+      - MAX_REQUESTS=${MAX_REQUESTS}
+      - INTERVAL_DAYS=${INTERVAL_DAYS}
+      - SLEEP_SECONDS=${SLEEP_SECONDS}
 
   metabase:
     image: metabase/metabase:latest
