@@ -76,7 +76,66 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--dataset",
         help="Dataset to query",
-        choices=["mdg_emvolio", "oasa_ridership"],
+        choices=[
+            "mdg_emvolio",
+            "oasa_ridership",
+            "road_traffic_attica",
+            "sailing_traffic",
+            "mcp_crime",
+            "mcp_traffic_accidents",
+            "mcp_traffic_violations",
+            "mcp_urban_incidents",
+            "mcp_forest_fires",
+            "mcp_financial_crimes",
+            "prisons-occupancy",
+            "prisons-capacity",
+            "internet_traffic",
+            "ktm_harea",
+            "ktm_confs",
+            "ktm_liens",
+            "ktm_transactions",
+            "ktm_owners",
+            "ktm_hplots",
+            "ktm_status",
+            "ktm_plots",
+            "admie_realtimescadares",
+            "admie_realtimescadasystemload",
+            "admie_dailyenergybalanceanalysis",
+            "diavgeia-organization",
+            "diavgeia-type",
+            "diavgeia-counts",
+            "companies-prefecture-type",
+            "mitos-services",
+            "gov-et-decrees",
+            "gov-et-laws",
+            "public-organizations",
+            "cadastre_natura_plot",
+            "cadastre_plot",
+            "oaed_unemployment",
+            "electricity_consumption",
+            "minedu_schools",
+            "minedu_dep",
+            "minedu_students_school",
+            "hcg_incidents",
+            "efet_inspections",
+            "mintour_agencies",
+            "minhealth_pharmacists",
+            "minhealth_pharmacies",
+            "minhealth_dentists",
+            "minhealth_doctors",
+            "grnet_atlas",
+            "grnet_eudoxus",
+            "mindev_realtors",
+            "minenv_inspectors",
+            "elte_auditors",
+            "eett_telecom_indicators",
+            "oee_accountants",
+            "minjust_law_firms",
+            "minjust_lawyers",
+            "eeep_casino_tickets",
+            "minstate_election_distribution",
+            "minstate_election_age",
+        ],
         required=True,
     )
     parser.add_argument(
@@ -99,7 +158,7 @@ def parse_arguments() -> argparse.Namespace:
     )
     parser.add_argument(
         "--table-name",
-        help="MariaDB table name to insert the GOV Data to",
+        help="MySQL table name to insert the GOV Data to",
         required=True,
     )
     parser.add_argument(
@@ -148,33 +207,6 @@ def create_date_intervals(
     return intervals
 
 
-async def main():
-    """Driver function."""
-    args = parse_arguments()
-    date_intervals = create_date_intervals(
-        args.date_from, args.date_to, args.interval_days
-    )
-
-    async with ClientSession() as session:
-        tasks = []
-        for date_interval in date_intervals:
-            url = construct_url(
-                args.dataset,
-                date_interval[0].strftime("%Y-%m-%d"),
-                date_interval[1].strftime("%Y-%m-%d"),
-            )
-            tasks.append(query_endpoint(url, args.token, session))
-            if len(tasks) >= args.max_requests:
-                responses = await gather_responses(tasks)
-                tasks = []
-                process_responses(responses, args)
-                # Wait to avoid stressing the backend too much
-                await asyncio.sleep(args.sleep_seconds)
-        if tasks:
-            responses = await gather_responses(tasks)
-            process_responses(responses, args)
-
-
 async def gather_responses(tasks: List[asyncio.Task]) -> List[Any]:
     """Collect backend responses.
 
@@ -211,7 +243,34 @@ def process_responses(responses: List[Any], args: argparse.Namespace) -> None:
     for response in responses:
         if isinstance(response, list) and response:
             rows_inserted = mysql_interface.insert_data(response)
-            print(f"Inserted {rows_inserted} new records to MySQL")
+            print(f"Inserted {rows_inserted} new records to table: {args.table_name}")
+
+
+async def main():
+    """Driver function."""
+    args = parse_arguments()
+    date_intervals = create_date_intervals(
+        args.date_from, args.date_to, args.interval_days
+    )
+
+    async with ClientSession() as session:
+        tasks = []
+        for date_interval in date_intervals:
+            url = construct_url(
+                args.dataset,
+                date_interval[0].strftime("%Y-%m-%d"),
+                date_interval[1].strftime("%Y-%m-%d"),
+            )
+            tasks.append(query_endpoint(url, args.token, session))
+            if len(tasks) >= args.max_requests:
+                responses = await gather_responses(tasks)
+                tasks = []
+                process_responses(responses, args)
+                # Wait to avoid stressing the backend too much
+                await asyncio.sleep(args.sleep_seconds)
+        if tasks:
+            responses = await gather_responses(tasks)
+            process_responses(responses, args)
 
 
 if __name__ == "__main__":

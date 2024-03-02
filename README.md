@@ -41,7 +41,7 @@ This shell script is executed from the Python Docker container. It runs the Pyth
 After all containers are up and running, Metabase can be accessed at `http://localhost:3000`. It requires an initial setup. For connecting to the MySQL database, this should be added to the connection string: `allowPublicKeyRetrieval=true`
 # Remarks
 1. Backend can struggle to serve multiple requests, thus a conservative approach is used (2 async tasks, 10 seconds sleep interval).
-2. Most datasets are small in size and there are no performance issues with this simple setup. However datasets like `oasa_ridership` are huge, and performance/RAM requirements start to suffer. An architecture/application rewrite is planned to ensure scalability across all datasets.
+2. Most datasets are small in size and there are no performance issues with this simple setup. However datasets like `oasa_ridership` are larger, and performance/RAM requirements start to suffer. An architecture/application rewrite is planned to ensure scalability across all datasets.
 
 # Extracting insights
 ![metabase dashboard](https://github.com/ikeratzakis/data-gov/blob/main/metabase_dashboard.png)
@@ -51,9 +51,15 @@ After all containers are up and running, Metabase can be accessed at `http://loc
 SELECT subquery.date, SUM(subquery.max_totaldistinctpersons) as total_max_totaldistinctpersons
 FROM (
     SELECT DATE(referencedate) as date, area, MAX(totaldistinctpersons) as max_totaldistinctpersons
-    FROM data_gov.CovidVaccinationData
+    FROM data_gov.covid_vaccination_data
     GROUP BY date, area
 ) as subquery
 GROUP BY subquery.date;
 ```
 
+# Normalizing the schema
+There is a lot of data duplication on table groups like the ktm_, minedu ones. These can be normalized to a more efficient schema (WIP)
+
+# Data management
+After the data have been imported to the MySQL database, they can be exported to CSV and then dumped to a more efficient database for analytics, like a dedicated time series database (e.g. InfluxDB) or a columnar database (e.g. Clickhouse).
+Alternatively, to facilitate this, a pipeline that selects records based on the DATE columns can be used, to migrate the data to another system for daily consumption. However, in general the datasets are small enough that a regular RDBMS can also work.
