@@ -1,44 +1,25 @@
 version: '3.8'
 services:
   db:
-    image: mysql:latest
+    image: postgres:latest
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "3306:3306"
+      - "5434:5434"
     volumes:
-      - db_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  app:
-    image: data-gov-python:latest
-    build: .
-    volumes:
-      - .:/app
-    depends_on:
-      - db
-    environment:
-      - PYTHONPATH=/app
-      - TOKEN=${TOKEN}
-      - DATASET=${DATASET}
-      - TABLE_NAME=${TABLE_NAME}
-      - MYSQL_HOST=${MYSQL_HOST}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - DATE_FROM=${DATE_FROM}
-      - DATE_TO=${DATE_TO}
-      - MAX_REQUESTS=${MAX_REQUESTS}
-      - INTERVAL_DAYS=${INTERVAL_DAYS}
-      - SLEEP_SECONDS=${SLEEP_SECONDS}
-
-  metabase:
-    image: metabase/metabase:latest
+  clickhouse:
+    image: yandex/clickhouse-server:latest
     ports:
-      - 3000:3000
-    depends_on:
-      - db
+      - 8123:8123
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    environment:
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
 
 volumes:
-  db_data:
+  postgres_data:
+  clickhouse-data:

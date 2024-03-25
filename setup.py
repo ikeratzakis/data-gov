@@ -5,8 +5,8 @@ setup(
     version="0.0.1",
     packages=find_packages(),
     install_requires=[
-        "orjson==3.9.13",
-        "mysql-connector-python==8.3.0",
+        "orjson==3.9.15",
+        "psycopg==3.1.18",
         "aiohttp==3.9.3",
         "pytest=8.0.0",
         "pytest-asyncio 0.23.5"
