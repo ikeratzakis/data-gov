@@ -2,7 +2,7 @@ import argparse
 import orjson
 import asyncio
 from typing import List, Any
-from mysql_functions import MySQLConnector
+from postgres_functions import PostgreSQLConnector
 from datetime import datetime, timedelta
 from aiohttp import ClientSession
 
@@ -135,6 +135,17 @@ def parse_arguments() -> argparse.Namespace:
             "eeep_casino_tickets",
             "minstate_election_distribution",
             "minstate_election_age",
+            "ekt-expenses-source",
+            "ekt-rd-personnel-sector",
+            "ekt-business-expenses-sector",
+            "ekt-research-expenses-sector",
+            "ekt-tech-growth-assessment",
+            "ekt-digital-tech-use",
+            "ekt-future-interest-sectors",
+            "ekt-adoption-factors",
+            "apdkriti-meteo",
+            "apdkriti-hydro",
+            "apdkriti-swimwater",
         ],
         required=True,
     )
@@ -158,20 +169,23 @@ def parse_arguments() -> argparse.Namespace:
     )
     parser.add_argument(
         "--table-name",
-        help="MySQL table name to insert the GOV Data to",
+        help="Postgres table name to insert the GOV Data to",
         required=True,
     )
     parser.add_argument(
-        "--mysql-host", help="MySQL host (e.g. localhost or IP)", required=True
+        "--postgres-host", help="Postgres host (e.g. localhost or IP)", required=True
     )
     parser.add_argument(
-        "--mysql-user", help="MySQL user to authenticate", required=True
+        "--postgres-user", help="Postgres user to authenticate", required=True
     )
     parser.add_argument(
-        "--mysql-password", help="MySQL password for authentication", required=True
+        "--postgres-password", help="Postgres password for authentication", required=True
     )
     parser.add_argument(
-        "--mysql-database", help="MySQL database to connect to", required=True
+        "--postgres-database", help="Postgres database to connect to", required=True
+    )
+    parser.add_argument(
+        "--postgres-schema", help="Database schema to use", required=True
     )
     parser.add_argument(
         "--date-from", help="Start date for the query in YYYY-MM-DD", required=True
@@ -233,16 +247,17 @@ def process_responses(responses: List[Any], args: argparse.Namespace) -> None:
         responses (List[Any]): List of responses from the backend. Each response can be a list of data or an error message.
         args (Namespace): Parsed command-line arguments.
     """
-    mysql_interface = MySQLConnector(
-        args.mysql_user,
-        args.mysql_password,
-        args.mysql_host,
-        args.mysql_database,
+    postgresql_interface = PostgreSQLConnector(
+        args.postgres_user,
+        args.postgres_password,
+        args.postgres_host,
+        args.postgres_database,
         args.table_name,
+        args.postgres_schema,
     )
     for response in responses:
         if isinstance(response, list) and response:
-            rows_inserted = mysql_interface.insert_data(response)
+            rows_inserted = postgresql_interface.insert_data(response)
             print(f"Inserted {rows_inserted} new records to table: {args.table_name}")
 
 
