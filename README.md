@@ -1,5 +1,16 @@
 # data-gov-project
 This is a Python application that fetches data from the [data.gov.gr repository](https://data.gov.gr/search/) using its API and inserts them to a **PostgreSQL** database for analysis. Tables that are regularly updated are synced to ClicHouse for faster OLAP either with Airbyte, or ClickHouse materialized PostgreSQL engine.
+
+# Architecture
+```mermaid
+graph TB;
+    A[Python] -->|Queries| B[data.gov API]
+    B -->|Data| A
+    A -->|Data| C[Postgres]
+    C -->|Airbyte/MaterializedSQL Sync| D[ClickHouse]
+    E[Superset] -->|Queries| D[ClickHouse]
+    D -->|Visualization Data| E;
+```
 # How to use
 
 ## Command line
