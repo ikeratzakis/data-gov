@@ -50,7 +50,8 @@ SETTINGS materialized_postgresql_schema = 'data_gov'
 3. First version of the project used a MySQL database for fast prototyping, but I faced several networking and permission issues with it. I decided migrating to PostgreSQL which I generally find superior to it. The init.sql provided originates from `pg_dump`, after migrating the data from MySQL to postgres with `pgloader`.
 
 
-
+## Example dashboards
+![superset dashboard](https://github.com/ikeratzakis/data-gov/blob/postgres-clickhouse/oasa_subway_dashboard.jpg)
 ## Example SQL Queries (to be updated)
 ```
 SELECT subquery.date, SUM(subquery.max_totaldistinctpersons) as total_max_totaldistinctpersons
